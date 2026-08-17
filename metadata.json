@@ -1,0 +1,6 @@
+{
+  "name": "Turf Management System",
+  "description": "An owner-only admin management system for sports turfs, scheduling, slots, bookings, customer directory, and revenue tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

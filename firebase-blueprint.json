@@ -1,0 +1,137 @@
+{
+  "entities": {
+    "Turf": {
+      "title": "Turf",
+      "description": "A bookable sports turf arena or court",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "sport": { "type": "string", "enum": ["football", "cricket", "badminton", "pickleball", "tennis", "multisport"] },
+        "pricePerHour": { "type": "number" },
+        "surface": { "type": "string", "maxLength": 50 },
+        "size": { "type": "string", "maxLength": 50 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "sport", "pricePerHour", "isActive"]
+    },
+    "Slot": {
+      "title": "Slot",
+      "description": "A bookable or blocked hourly time slot for a turf on a specific date",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "turfId": { "type": "string" },
+        "turfName": { "type": "string" },
+        "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "price": { "type": "number" },
+        "status": { "type": "string", "enum": ["available", "booked", "blocked"] },
+        "blockReason": { "type": "string", "maxLength": 200 },
+        "bookingId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["turfId", "date", "startTime", "endTime", "price", "status"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "A reservation record for a slot",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerPhone": { "type": "string", "maxLength": 20 },
+        "turfId": { "type": "string" },
+        "turfName": { "type": "string" },
+        "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "pendingAmount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "UPI", "Card", "Other"] },
+        "paymentStatus": { "type": "string", "enum": ["paid", "partial", "pending"] },
+        "bookingStatus": { "type": "string", "enum": ["confirmed", "completed", "cancelled"] },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["customerName", "customerPhone", "turfId", "date", "startTime", "endTime", "totalAmount", "paidAmount", "paymentStatus", "bookingStatus"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer record automatically aggregated from bookings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "totalBookings": { "type": "number" },
+        "totalSpent": { "type": "number" },
+        "pendingAmount": { "type": "number" },
+        "lastBookingDate": { "type": "string" },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "phone"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment transaction record for a booking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "UPI", "Card", "Other"] },
+        "notes": { "type": "string", "maxLength": 200 },
+        "recordedAt": { "type": "string" }
+      },
+      "required": ["bookingId", "amount", "paymentMethod"]
+    },
+    "FacilitySettings": {
+      "title": "FacilitySettings",
+      "description": "Turf complex settings and operating hours",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "facilityName": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "address": { "type": "string", "maxLength": 200 },
+        "currencySymbol": { "type": "string", "maxLength": 5 },
+        "openingTime": { "type": "string" },
+        "closingTime": { "type": "string" },
+        "slotDurationMinutes": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/turfs/{turfId}": {
+      "schema": "Turf",
+      "description": "Turf courts and arenas"
+    },
+    "/slots/{slotId}": {
+      "schema": "Slot",
+      "description": "Scheduled time slots"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Customer reservations"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer directory"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Payment records and receipts"
+    },
+    "/settings/{settingsId}": {
+      "schema": "FacilitySettings",
+      "description": "Facility configuration"
+    }
+  }
+}
