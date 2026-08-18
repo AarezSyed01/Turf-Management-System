@@ -60,10 +60,10 @@ let localBookings: Booking[] = loadLocal<Booking[]>(STORAGE_KEYS.BOOKINGS, []);
 let localCustomers: Customer[] = loadLocal<Customer[]>(STORAGE_KEYS.CUSTOMERS, []);
 let localPayments: PaymentRecord[] = loadLocal<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, []);
 let localSettings: FacilitySettings = loadLocal<FacilitySettings>(STORAGE_KEYS.SETTINGS, {
-  facilityName: 'Apex Arena & Sports Complex',
-  ownerName: 'Aarez Ali',
-  phone: '+91 98765 43210',
-  address: 'Sports Complex, Ring Road Arena',
+  facilityName: '',
+  ownerName: '',
+  phone: '',
+  address: '',
   currencySymbol: '₹',
   openingTime: '06:00',
   closingTime: '23:00',

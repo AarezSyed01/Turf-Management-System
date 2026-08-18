@@ -134,18 +134,61 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               <span>Smart Arena & Slot Operating System</span>
             </motion.div>
 
-            {/* 3-Second Loading Progress Bar */}
-            <div className="w-48 sm:w-56 mt-8 space-y-2">
-              <div className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+            {/* Modern Athletic Stadium & Radar Pulse Loader */}
+            <div className="mt-8 flex flex-col items-center gap-3">
+              {/* Spinning Ring & Radar Pulse Core */}
+              <div className="relative w-14 h-14 flex items-center justify-center">
+                {/* Outer pulsing ring */}
                 <motion.div
-                  className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 rounded-full"
-                  style={{ width: `${progress}%` }}
-                  transition={{ ease: 'linear' }}
+                  animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.7, 0.3] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 rounded-full bg-emerald-500/20 blur-sm"
                 />
+
+                {/* Rotating Conic Gradient Spinner */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                  className="w-12 h-12 rounded-full p-[2.5px] bg-gradient-to-tr from-emerald-500 via-teal-300 to-transparent"
+                >
+                  <div className="w-full h-full bg-slate-950 rounded-full flex items-center justify-center" />
+                </motion.div>
+
+                {/* Inner Glowing Core */}
+                <div className="absolute w-4 h-4 bg-gradient-to-br from-emerald-400 to-teal-300 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
-                <span>SYSTEM INITIALIZING</span>
-                <span>{Math.min(100, Math.round(progress))}%</span>
+
+              {/* Dynamic Status Ticker */}
+              <div className="text-center space-y-1">
+                <p className="text-xs font-medium text-emerald-300/90 tracking-wide">
+                  {progress < 30
+                    ? 'Initializing TurfOS Arena...'
+                    : progress < 65
+                    ? 'Loading Slots & Facilities...'
+                    : progress < 90
+                    ? 'Syncing Bookings & Payments...'
+                    : 'System Ready'}
+                </p>
+
+                {/* Segmented Stadium Light Dots */}
+                <div className="flex items-center justify-center gap-1.5 pt-1">
+                  {[0, 25, 50, 75, 100].map((step, idx) => (
+                    <motion.div
+                      key={step}
+                      className={`h-1 rounded-full transition-all duration-300 ${
+                        progress >= step
+                          ? 'w-4 bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+                          : 'w-1.5 bg-slate-800'
+                      }`}
+                      animate={
+                        progress >= step
+                          ? { opacity: [0.7, 1, 0.7] }
+                          : { opacity: 0.4 }
+                      }
+                      transition={{ duration: 1, repeat: Infinity, delay: idx * 0.15 }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>

@@ -39,9 +39,10 @@ import {
 import { Loader2 } from 'lucide-react';
 
 const defaultFacilitySettings: FacilitySettings = {
-  facilityName: 'Apex Arena & Sports Turf',
-  phone: '+91 98765 43210',
-  address: 'Ring Road Sports Complex, Mumbai',
+  facilityName: '',
+  ownerName: '',
+  phone: '',
+  address: '',
   currencySymbol: '₹',
   openingHour: 6,
   closingHour: 23,
@@ -319,7 +320,6 @@ const MainApp: React.FC = () => {
           isOpen={isInitialTurfSetupOpen}
           onClose={() => setIsInitialTurfSetupOpen(false)}
           existingSettings={settings}
-          onSeedData={handleSeedData}
         />
       )}
     </div>
