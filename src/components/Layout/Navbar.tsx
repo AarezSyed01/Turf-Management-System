@@ -1,16 +1,18 @@
 import React from 'react';
-import { Plus, Calendar, ShieldCheck } from 'lucide-react';
+import { Plus, Calendar, ShieldCheck, Edit3 } from 'lucide-react';
 import { FacilitySettings } from '../../types.ts';
 
 interface NavbarProps {
   settings: FacilitySettings;
   onOpenNewBooking: () => void;
+  onOpenTurfSetup?: () => void;
   activeTurfCount: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   settings,
   onOpenNewBooking,
+  onOpenTurfSetup,
   activeTurfCount,
 }) => {
   const todayFormatted = new Date().toLocaleDateString('en-US', {
@@ -29,9 +31,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-lg font-bold text-slate-900 tracking-tight truncate max-w-[140px] xs:max-w-[190px] sm:max-w-xs">
-                {settings.facilityName || 'Turf Management'}
-              </h1>
+              <button
+                type="button"
+                onClick={onOpenTurfSetup}
+                className="group flex items-center gap-1.5 text-left text-sm sm:text-lg font-bold text-slate-900 tracking-tight truncate max-w-[140px] xs:max-w-[190px] sm:max-w-xs hover:text-emerald-700 transition-colors cursor-pointer"
+                title="Click to rename turf or arena"
+              >
+                <span className="truncate">{settings.facilityName || 'Turf Management'}</span>
+                <Edit3 className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
               <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 {activeTurfCount} {activeTurfCount === 1 ? 'Turf' : 'Turfs'} Active

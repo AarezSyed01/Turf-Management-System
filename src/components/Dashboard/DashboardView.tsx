@@ -38,6 +38,7 @@ interface DashboardViewProps {
   onSelectBooking: (booking: Booking) => void;
   onNavigateToTab: (tab: any) => void;
   onSeedData: () => void;
+  onOpenTurfSetup?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -53,6 +54,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onSelectBooking,
   onNavigateToTab,
   onSeedData,
+  onOpenTurfSetup,
 }) => {
   const currency = settings.currencySymbol || '₹';
   const todayStr = new Date().toISOString().split('T')[0];
@@ -162,6 +164,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {onOpenTurfSetup && (
+            <button
+              onClick={onOpenTurfSetup}
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Set up or change your turf name and complex details"
+            >
+              <LandPlot className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{turfs.length === 0 ? 'Add Turf Name' : 'Turf Details'}</span>
+            </button>
+          )}
           {turfs.length === 0 && (
             <button
               onClick={onSeedData}

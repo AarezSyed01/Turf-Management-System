@@ -13,6 +13,7 @@ import { NewBookingModal } from './components/Modals/NewBookingModal.tsx';
 import { RecordPaymentModal } from './components/Modals/RecordPaymentModal.tsx';
 import { BlockSlotModal } from './components/Modals/BlockSlotModal.tsx';
 import { BookingDetailsModal } from './components/Modals/BookingDetailsModal.tsx';
+import { InitialTurfSetupModal } from './components/Modals/InitialTurfSetupModal.tsx';
 
 import {
   subscribeToTurfs,
@@ -58,6 +59,7 @@ const MainApp: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Modal States
+  const [isInitialTurfSetupOpen, setIsInitialTurfSetupOpen] = useState(false);
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [bookingPreselectTurfId, setBookingPreselectTurfId] = useState<string | undefined>();
   const [bookingPreselectSlot, setBookingPreselectSlot] = useState<Slot | undefined>();
@@ -83,6 +85,11 @@ const MainApp: React.FC = () => {
     const unsubTurfs = subscribeToTurfs((data) => {
       setTurfs(data);
       checkLoaded();
+      // If first time visit or no turfs configured, prompt for initial turf name setup
+      const hasCompletedSetup = localStorage.getItem('turf_initial_setup_completed');
+      if (!hasCompletedSetup && data.length === 0) {
+        setIsInitialTurfSetupOpen(true);
+      }
     });
 
     const unsubSlots = subscribeToSlots((data) => {
@@ -156,6 +163,7 @@ const MainApp: React.FC = () => {
         settings={settings}
         activeTurfCount={turfs.filter((t) => t.isActive).length}
         onOpenNewBooking={() => handleOpenNewBooking()}
+        onOpenTurfSetup={() => setIsInitialTurfSetupOpen(true)}
       />
 
       {/* Main Workspace Body */}
@@ -185,6 +193,7 @@ const MainApp: React.FC = () => {
               onSelectBooking={(b) => setDetailsBookingTarget(b)}
               onNavigateToTab={setActiveTab}
               onSeedData={handleSeedData}
+              onOpenTurfSetup={() => setIsInitialTurfSetupOpen(true)}
             />
           )}
 
@@ -290,6 +299,15 @@ const MainApp: React.FC = () => {
             setDetailsBookingTarget(null);
             setPaymentBookingTarget(b);
           }}
+        />
+      )}
+      {/* Initial Turf Setup Onboarding Modal */}
+      {isInitialTurfSetupOpen && (
+        <InitialTurfSetupModal
+          isOpen={isInitialTurfSetupOpen}
+          onClose={() => setIsInitialTurfSetupOpen(false)}
+          existingSettings={settings}
+          onSeedData={handleSeedData}
         />
       )}
     </div>
