@@ -263,128 +263,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Revenue Summary Breakdown & Simple Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
-        {/* Revenue Breakdown */}
-        <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xs">
-          <div>
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Revenue Summary</span>
-              </h3>
-              <span className="text-[10px] sm:text-xs text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded-full">
-                Live Totals
-              </span>
-            </div>
-
-            <div className="space-y-2 sm:space-y-3">
-              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">Today's Collection</span>
-                  <span className="text-base sm:text-lg font-extrabold text-slate-900">
-                    {currency}{todayPaymentsSum.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  {todayBookings.length} Bookings
-                </span>
-              </div>
-
-              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">This Week</span>
-                  <span className="text-base sm:text-lg font-extrabold text-emerald-700">
-                    {currency}{thisWeekPaymentsSum.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-xs text-slate-500 font-medium">Last 7 Days</span>
-              </div>
-
-              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">This Month</span>
-                  <span className="text-base sm:text-lg font-extrabold text-slate-900">
-                    {currency}{thisMonthPaymentsSum.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-xs text-slate-500 font-medium">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })}
-                </span>
-              </div>
-
-              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">All Time Revenue</span>
-                  <span className="text-base sm:text-lg font-extrabold text-slate-900">
-                    {currency}{totalRevenueAllTime.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-xs text-slate-500 font-medium">{payments.length} Txns</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Simple Revenue Trend Visualizer */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xs">
-          <div>
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                  7-Day Revenue Trend
-                </h3>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Daily collection performance</p>
-              </div>
-              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-700">
-                <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                <span>Collected</span>
-              </div>
-            </div>
-
-            {/* Custom Bar Chart - Responsive sizing */}
-            <div className="h-36 sm:h-48 pt-4 sm:pt-6 flex items-end justify-between gap-1.5 sm:gap-4 border-b border-slate-200 pb-2">
-              {last7Days.map((day, idx) => {
-                const heightPercent = Math.max(8, Math.round((day.revenue / maxRevenueInWeek) * 100));
-                const isToday = day.dateStr === todayStr;
-                return (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1 sm:gap-2 h-full justify-end group">
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono whitespace-nowrap font-medium">
-                      {currency}{day.revenue > 999 ? `${Math.round(day.revenue / 1000)}k` : day.revenue}
-                    </span>
-                    <div
-                      style={{ height: `${heightPercent}%` }}
-                      className={`w-full max-w-[28px] sm:max-w-[36px] rounded-t-md sm:rounded-t-lg transition-all ${
-                        isToday
-                          ? 'bg-emerald-500 shadow-xs'
-                          : 'bg-emerald-200 hover:bg-emerald-300'
-                      }`}
-                    />
-                    <span
-                      className={`text-[10px] sm:text-[11px] font-medium ${
-                        isToday ? 'text-emerald-700 font-bold' : 'text-slate-500'
-                      }`}
-                    >
-                      {day.dayName}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-3 sm:mt-4 flex items-center justify-between text-[11px] sm:text-xs text-slate-500 pt-1 sm:pt-2">
-            <span>Peak: <strong className="text-slate-900 font-bold">{currency}{maxRevenueInWeek.toLocaleString('en-IN')}</strong></span>
-            <button
-              onClick={() => onNavigateToTab('payments')}
-              className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 cursor-pointer"
-            >
-              Ledger <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* TODAY'S SCHEDULE */}
       <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -567,6 +445,128 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             })}
           </div>
         )}
+      </div>
+
+      {/* Revenue Summary Breakdown & Simple Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
+        {/* Revenue Breakdown */}
+        <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xs">
+          <div>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Revenue Summary</span>
+              </h3>
+              <span className="text-[10px] sm:text-xs text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded-full">
+                Live Totals
+              </span>
+            </div>
+
+            <div className="space-y-2 sm:space-y-3">
+              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">Today's Collection</span>
+                  <span className="text-base sm:text-lg font-extrabold text-slate-900">
+                    {currency}{todayPaymentsSum.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {todayBookings.length} Bookings
+                </span>
+              </div>
+
+              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">This Week</span>
+                  <span className="text-base sm:text-lg font-extrabold text-emerald-700">
+                    {currency}{thisWeekPaymentsSum.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <span className="text-[10px] sm:text-xs text-slate-500 font-medium">Last 7 Days</span>
+              </div>
+
+              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">This Month</span>
+                  <span className="text-base sm:text-lg font-extrabold text-slate-900">
+                    {currency}{thisMonthPaymentsSum.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <span className="text-[10px] sm:text-xs text-slate-500 font-medium">
+                  {new Date().toLocaleDateString('en-US', { month: 'short' })}
+                </span>
+              </div>
+
+              <div className="p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] sm:text-xs text-slate-500 block font-medium">All Time Revenue</span>
+                  <span className="text-base sm:text-lg font-extrabold text-slate-900">
+                    {currency}{totalRevenueAllTime.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <span className="text-[10px] sm:text-xs text-slate-500 font-medium">{payments.length} Txns</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Simple Revenue Trend Visualizer */}
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xs">
+          <div>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                  7-Day Revenue Trend
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Daily collection performance</p>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-700">
+                <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                <span>Collected</span>
+              </div>
+            </div>
+
+            {/* Custom Bar Chart - Responsive sizing */}
+            <div className="h-36 sm:h-48 pt-4 sm:pt-6 flex items-end justify-between gap-1.5 sm:gap-4 border-b border-slate-200 pb-2">
+              {last7Days.map((day, idx) => {
+                const heightPercent = Math.max(8, Math.round((day.revenue / maxRevenueInWeek) * 100));
+                const isToday = day.dateStr === todayStr;
+                return (
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-1 sm:gap-2 h-full justify-end group">
+                    <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono whitespace-nowrap font-medium">
+                      {currency}{day.revenue > 999 ? `${Math.round(day.revenue / 1000)}k` : day.revenue}
+                    </span>
+                    <div
+                      style={{ height: `${heightPercent}%` }}
+                      className={`w-full max-w-[28px] sm:max-w-[36px] rounded-t-md sm:rounded-t-lg transition-all ${
+                        isToday
+                          ? 'bg-emerald-500 shadow-xs'
+                          : 'bg-emerald-200 hover:bg-emerald-300'
+                      }`}
+                    />
+                    <span
+                      className={`text-[10px] sm:text-[11px] font-medium ${
+                        isToday ? 'text-emerald-700 font-bold' : 'text-slate-500'
+                      }`}
+                    >
+                      {day.dayName}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-3 sm:mt-4 flex items-center justify-between text-[11px] sm:text-xs text-slate-500 pt-1 sm:pt-2">
+            <span>Peak: <strong className="text-slate-900 font-bold">{currency}{maxRevenueInWeek.toLocaleString('en-IN')}</strong></span>
+            <button
+              onClick={() => onNavigateToTab('payments')}
+              className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 cursor-pointer"
+            >
+              Ledger <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Quick Action Hub - Touch Friendly 2x2 Grid on Mobile */}
