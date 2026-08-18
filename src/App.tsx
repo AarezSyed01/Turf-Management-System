@@ -85,9 +85,9 @@ const MainApp: React.FC = () => {
     const unsubTurfs = subscribeToTurfs((data) => {
       setTurfs(data);
       checkLoaded();
-      // If first time visit or no turfs configured, prompt for initial turf name setup
+      // If first time opening app or no turfs configured, prompt for initial turf & owner setup
       const hasCompletedSetup = localStorage.getItem('turf_initial_setup_completed');
-      if (!hasCompletedSetup && data.length === 0) {
+      if (!hasCompletedSetup || data.length === 0) {
         setIsInitialTurfSetupOpen(true);
       }
     });

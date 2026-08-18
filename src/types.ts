@@ -84,6 +84,7 @@ export interface PaymentRecord {
 export interface FacilitySettings {
   id?: string;
   facilityName: string;
+  ownerName?: string;
   phone?: string;
   address?: string;
   currencySymbol?: string;

@@ -20,6 +20,7 @@ interface SettingsViewProps {
 export const SettingsView: React.FC<SettingsViewProps> = ({ settings }) => {
   // Facility Form State
   const [facilityName, setFacilityName] = useState(settings.facilityName);
+  const [ownerName, setOwnerName] = useState(settings.ownerName || '');
   const [phone, setPhone] = useState(settings.phone || '');
   const [address, setAddress] = useState(settings.address || '');
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol || '₹');
@@ -38,6 +39,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings }) => {
     try {
       await updateFacilitySettings({
         facilityName: facilityName.trim(),
+        ownerName: ownerName.trim(),
         phone: phone.trim(),
         address: address.trim(),
         currencySymbol: currencySymbol.trim() || '₹',
@@ -124,6 +126,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings }) => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Owner / Manager Name
+              </label>
+              <input
+                type="text"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="e.g. Aarez Ali"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                 Facility Contact Phone
               </label>
               <input
@@ -134,19 +151,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings }) => {
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:border-emerald-500 focus:bg-white"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Address & Location
-            </label>
-            <input
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. Near Sports Complex, Ring Road, Mumbai"
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
-            />
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Address & Location
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="e.g. Near Sports Complex, Ring Road, Mumbai"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -153,7 +153,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               Live Facility Dashboard
             </span>
-            <span className="text-xs text-slate-500">Owner View</span>
+            <span className="text-xs text-slate-500">
+              {settings.ownerName ? `Owner: ${settings.ownerName}` : 'Owner View'}
+            </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {settings.facilityName || 'Turf Operations Center'}

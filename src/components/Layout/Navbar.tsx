@@ -54,9 +54,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+          <div
+            onClick={onOpenTurfSetup}
+            className="hidden md:flex items-center gap-1.5 text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer transition-colors"
+            title="Edit facility & owner details"
+          >
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span className="font-semibold">Owner Admin</span>
+            <span className="font-semibold">{settings.ownerName || 'Owner Admin'}</span>
           </div>
 
           <button

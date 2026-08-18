@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Building2,
+  User,
   Clock,
   IndianRupee,
   X,
@@ -28,7 +29,10 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
   onSeedData,
 }) => {
   const [facilityName, setFacilityName] = useState(
-    existingSettings.facilityName || 'Apex Arena & Sports Turf'
+    existingSettings.facilityName || 'Apex Sports Turf'
+  );
+  const [ownerName, setOwnerName] = useState(
+    existingSettings.ownerName || 'Aarez Ali'
   );
   const [turfName, setTurfName] = useState('Main Football Turf (Pitch 1)');
   const [sport, setSport] = useState<SportType>('football');
@@ -36,7 +40,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
   const [surface, setSurface] = useState('FIFA Quality Artificial Turf');
   const [phone, setPhone] = useState(existingSettings.phone || '+91 98765 43210');
   const [cityAddress, setCityAddress] = useState(
-    existingSettings.address || 'Sports Complex, Main Ring Road'
+    existingSettings.address || 'Sports Complex, Ring Road'
   );
   const [loading, setLoading] = useState(false);
 
@@ -78,9 +82,10 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
 
     setLoading(true);
     try {
-      // 1. Update facility settings
+      // 1. Update facility settings with facility name and owner name
       await updateFacilitySettings({
         facilityName: facilityName.trim(),
+        ownerName: ownerName.trim(),
         phone: phone.trim(),
         address: cityAddress.trim(),
         currencySymbol: existingSettings.currencySymbol || '₹',
@@ -96,7 +101,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
         pricePerHour: Number(pricePerHour) || 800,
         surface: surface.trim(),
         size: sport === 'football' ? '5-a-side (90x50 ft)' : 'Standard Court',
-        description: `Primary ${sport} arena at ${facilityName.trim()}`,
+        description: `Primary ${sport} arena at ${facilityName.trim()} managed by ${ownerName.trim() || 'Facility Owner'}`,
         isActive: true,
       });
 
@@ -151,42 +156,57 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-100 bg-white/15 px-2.5 py-0.5 rounded-full">
-                First Time Setup
+                Welcome Onboarding
               </span>
               <h2 className="text-xl font-bold tracking-tight text-white mt-1">
-                Name Your Turf & Facility
+                Setup Turf Name & Owner Details
               </h2>
             </div>
           </div>
           <p className="text-xs sm:text-sm text-emerald-50 max-w-md">
-            Set your sports arena name and primary pitch to configure your booking schedule in seconds.
+            Enter your sports arena brand and owner name to personalize your booking engine and schedule.
           </p>
         </div>
 
         {/* Setup Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
-          {/* 1. Facility / Arena Name */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Turf Complex / Business Name *</span>
-            </label>
-            <input
-              type="text"
-              required
-              autoFocus
-              value={facilityName}
-              onChange={(e) => setFacilityName(e.target.value)}
-              placeholder="e.g. Apex Sports Arena, Metro Turf Club"
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-medium"
-              id="initial-setup-facility-name"
-            />
-            <p className="text-[11px] text-slate-400">
-              This name will appear on player receipts, headers, and booking invoices.
-            </p>
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+          {/* Row 1: Facility / Arena Name & Owner Name */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Turf Complex Name *</span>
+              </label>
+              <input
+                type="text"
+                required
+                autoFocus
+                value={facilityName}
+                onChange={(e) => setFacilityName(e.target.value)}
+                placeholder="e.g. Apex Arena, Champion Turf"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-medium"
+                id="initial-setup-facility-name"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Owner / Manager Name *</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="e.g. Aarez Ali"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-medium"
+                id="initial-setup-owner-name"
+              />
+            </div>
           </div>
 
-          {/* 2. Primary Turf / Pitch Name */}
+          {/* Row 2: First Turf / Pitch Name */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
               <LandPlot className="w-3.5 h-3.5 text-emerald-600" />
@@ -203,7 +223,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
             />
           </div>
 
-          {/* 3. Sport Type Selector */}
+          {/* Row 3: Sport Type Selector */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
               <Trophy className="w-3.5 h-3.5 text-emerald-600" />
@@ -233,7 +253,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
             </div>
           </div>
 
-          {/* 4. Price Per Hour & Surface */}
+          {/* Row 4: Price Per Hour & Surface */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -272,10 +292,10 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
             </div>
           </div>
 
-          {/* Contact Details (Collapsible / Compact) */}
+          {/* Contact Details (Phone & City) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
             <div className="space-y-1">
-              <label className="block text-[11px] font-semibold text-slate-500">Contact Number</label>
+              <label className="block text-[11px] font-semibold text-slate-500">Facility Phone</label>
               <input
                 type="text"
                 value={phone}
@@ -303,7 +323,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
               onClick={handleSkipOrSample}
               className="text-xs text-slate-500 hover:text-slate-800 font-semibold transition-colors cursor-pointer order-2 sm:order-1"
             >
-              Load Demo Turfs & Data
+              Load Demo Turfs & Bookings
             </button>
 
             <div className="flex items-center gap-2.5 w-full sm:w-auto order-1 sm:order-2">
@@ -321,7 +341,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
                 id="initial-setup-submit-btn"
               >
                 {loading ? (
-                  <span>Creating Turf...</span>
+                  <span>Saving & Creating Turf...</span>
                 ) : (
                   <>
                     <span>Save & Launch Turf</span>
