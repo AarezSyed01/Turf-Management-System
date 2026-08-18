@@ -14,6 +14,7 @@ import { RecordPaymentModal } from './components/Modals/RecordPaymentModal.tsx';
 import { BlockSlotModal } from './components/Modals/BlockSlotModal.tsx';
 import { BookingDetailsModal } from './components/Modals/BookingDetailsModal.tsx';
 import { InitialTurfSetupModal } from './components/Modals/InitialTurfSetupModal.tsx';
+import { SplashScreen } from './components/Splash/SplashScreen.tsx';
 
 import {
   subscribeToTurfs,
@@ -48,6 +49,9 @@ const defaultFacilitySettings: FacilitySettings = {
 };
 
 const MainApp: React.FC = () => {
+  // Opening Splash Animation (3 seconds on each app open)
+  const [showSplash, setShowSplash] = useState(true);
+
   // App State
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [turfs, setTurfs] = useState<Turf[]>([]);
@@ -158,6 +162,14 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-500 selection:text-white">
+      {/* 5-Second Welcome to TurfOS Intro Animation */}
+      {showSplash && (
+        <SplashScreen
+          onComplete={() => setShowSplash(false)}
+          durationMs={5000}
+        />
+      )}
+
       {/* Top Navigation */}
       <Navbar
         settings={settings}
