@@ -174,7 +174,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               title="Set up or change your turf name and complex details"
             >
               <LandPlot className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="truncate">{turfs.length === 0 ? 'Add Turf' : 'Turf Details'}</span>
+              <span className="truncate">{settings.facilityName ? 'Facility Details' : 'Turf Setup'}</span>
             </button>
           )}
           <button

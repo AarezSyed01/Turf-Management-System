@@ -129,7 +129,7 @@ const MainApp: React.FC = () => {
   const handleSplashComplete = () => {
     setShowSplash(false);
     const hasCompletedSetup = localStorage.getItem('turf_initial_setup_completed');
-    if (!hasCompletedSetup || turfs.length === 0) {
+    if (!hasCompletedSetup || !settings.facilityName) {
       setIsInitialTurfSetupOpen(true);
     }
   };

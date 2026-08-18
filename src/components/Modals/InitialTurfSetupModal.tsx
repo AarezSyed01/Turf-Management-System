@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { FacilitySettings } from '../../types.ts';
-import { addTurf, updateFacilitySettings, generateSlotsForDate } from '../../lib/db.ts';
+import { updateFacilitySettings } from '../../lib/db.ts';
 import {
   LandPlot,
   ArrowRight,
   User,
   MapPin,
   X,
-  Sparkles,
 } from 'lucide-react';
 
 interface InitialTurfSetupModalProps {
@@ -52,11 +51,11 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
 
     setLoading(true);
     try {
-      // 1. Update facility settings with Turf Name, Owner Name, and Location
+      // Update facility organization settings (brand name, owner name, location)
       await updateFacilitySettings({
         facilityName: tName,
         ownerName: oName,
-        address: loc || 'Main Arena',
+        address: loc || '',
         phone: existingSettings.phone || '',
         currencySymbol: existingSettings.currencySymbol || '₹',
         openingTime: existingSettings.openingTime || '06:00',
@@ -64,40 +63,11 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
         slotDurationMinutes: 60,
       });
 
-      // 2. Add the primary turf court
-      const newTurfId = await addTurf({
-        name: tName,
-        sport: 'football',
-        pricePerHour: 800,
-        surface: 'Standard Sports Turf',
-        size: 'Standard Arena',
-        description: loc ? `${tName} located in ${loc}` : tName,
-        isActive: true,
-      });
-
-      // 3. Generate initial slots for today so the schedule is immediately active
-      if (newTurfId) {
-        const todayStr = new Date().toISOString().split('T')[0];
-        try {
-          await generateSlotsForDate({
-            date: todayStr,
-            turfId: newTurfId,
-            turfName: tName,
-            openingHour: 6,
-            closingHour: 23,
-            slotDurationMinutes: 60,
-            pricePerHour: 800,
-          });
-        } catch (slotErr) {
-          console.warn('Slot auto-generate warning:', slotErr);
-        }
-      }
-
       // Mark setup as completed in localStorage and close modal
       localStorage.setItem('turf_initial_setup_completed', 'true');
       onClose();
     } catch (error: any) {
-      console.error('Failed to setup initial turf:', error);
+      console.error('Failed to setup organization details:', error);
       setErrorMessage(
         error?.message || 'Unable to save turf details. Please try again.'
       );
