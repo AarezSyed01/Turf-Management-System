@@ -32,9 +32,6 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
     name: '',
     sport: 'football' as SportType,
     pricePerHour: 800,
-    surface: 'FIFA Quality Artificial Turf',
-    size: '5-a-side (90x50 ft)',
-    description: '',
     isActive: true,
   });
 
@@ -44,9 +41,6 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
       name: '',
       sport: 'football',
       pricePerHour: 800,
-      surface: 'FIFA Quality Artificial Turf',
-      size: '5-a-side (90x50 ft)',
-      description: '',
       isActive: true,
     });
     setIsModalOpen(true);
@@ -58,9 +52,6 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
       name: turf.name,
       sport: turf.sport,
       pricePerHour: turf.pricePerHour,
-      surface: turf.surface || '',
-      size: turf.size || '',
-      description: turf.description || '',
       isActive: turf.isActive,
     });
     setIsModalOpen(true);
@@ -77,9 +68,6 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
           name: formData.name.trim(),
           sport: formData.sport,
           pricePerHour: Number(formData.pricePerHour),
-          surface: formData.surface,
-          size: formData.size,
-          description: formData.description,
           isActive: formData.isActive,
         });
       } else {
@@ -87,9 +75,6 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
           name: formData.name.trim(),
           sport: formData.sport,
           pricePerHour: Number(formData.pricePerHour),
-          surface: formData.surface,
-          size: formData.size,
-          description: formData.description,
           isActive: formData.isActive,
         });
       }
@@ -207,36 +192,12 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
                   </span>
                 </div>
 
-                {turf.description && (
-                  <p className="text-xs text-slate-500 line-clamp-2 mb-4">
-                    {turf.description}
-                  </p>
-                )}
-
-                {/* Specs List */}
-                <div className="space-y-2 py-3 border-y border-slate-100 text-xs">
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span className="text-slate-500">Hourly Rate:</span>
-                    <span className="text-sm font-bold text-emerald-700 font-mono">
-                      {currency}{turf.pricePerHour} / hr
-                    </span>
-                  </div>
-
-                  {turf.size && (
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span className="text-slate-500">Dimensions:</span>
-                      <span className="font-medium text-slate-800">{turf.size}</span>
-                    </div>
-                  )}
-
-                  {turf.surface && (
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span className="text-slate-500">Surface:</span>
-                      <span className="font-medium text-slate-800 truncate max-w-[150px]">
-                        {turf.surface}
-                      </span>
-                    </div>
-                  )}
+                {/* Rate Display */}
+                <div className="py-3 border-y border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Hourly Rate:</span>
+                  <span className="text-sm font-bold text-emerald-700 font-mono">
+                    {currency}{turf.pricePerHour} / hr
+                  </span>
                 </div>
               </div>
 
@@ -342,47 +303,6 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:border-emerald-500 focus:bg-white"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Dimensions / Size
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 5-a-side (100x60 ft)"
-                    value={formData.size}
-                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Surface Type
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Artificial Grass 50mm"
-                    value={formData.surface}
-                    onChange={(e) => setFormData({ ...formData, surface: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Notes / Amenities Description
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g. Floodlights, spectator benches, changing room access..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
-                />
               </div>
 
               <div className="flex items-center gap-3 pt-2">
