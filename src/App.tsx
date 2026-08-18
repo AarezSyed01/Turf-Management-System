@@ -90,11 +90,6 @@ const MainApp: React.FC = () => {
     const unsubTurfs = subscribeToTurfs((data) => {
       setTurfs(data);
       checkLoaded();
-      // If first time opening app or no turfs configured, prompt for initial turf & owner setup
-      const hasCompletedSetup = localStorage.getItem('turf_initial_setup_completed');
-      if (!hasCompletedSetup || data.length === 0) {
-        setIsInitialTurfSetupOpen(true);
-      }
     });
 
     const unsubSlots = subscribeToSlots((data) => {
@@ -130,6 +125,15 @@ const MainApp: React.FC = () => {
     };
   }, []);
 
+  // Handle splash completion: automatically open turf setup for first-time users
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    const hasCompletedSetup = localStorage.getItem('turf_initial_setup_completed');
+    if (!hasCompletedSetup || turfs.length === 0) {
+      setIsInitialTurfSetupOpen(true);
+    }
+  };
+
   // Handler for opening New Booking Modal
   const handleOpenNewBooking = (
     turfId?: string,
@@ -163,11 +167,11 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-emerald-500 selection:text-white">
-      {/* 5-Second Welcome to TurfOS Intro Animation */}
+      {/* 3-Second Welcome to TurfOS Intro Animation */}
       {showSplash && (
         <SplashScreen
-          onComplete={() => setShowSplash(false)}
-          durationMs={5000}
+          onComplete={handleSplashComplete}
+          durationMs={3000}
         />
       )}
 

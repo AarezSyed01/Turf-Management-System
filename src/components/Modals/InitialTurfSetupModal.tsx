@@ -199,7 +199,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter location / city"
+              placeholder="Enter location"
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-medium"
               id="initial-setup-location"
             />
