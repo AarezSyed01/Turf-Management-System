@@ -42,6 +42,7 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
   const [cityAddress, setCityAddress] = useState(
     existingSettings.address || 'Sports Complex, Ring Road'
   );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -76,18 +77,26 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!facilityName.trim() || !turfName.trim()) return;
+  const handleProcessSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setErrorMessage(null);
+
+    const fName = facilityName.trim() || 'Apex Sports Arena';
+    const oName = ownerName.trim() || 'Turf Owner';
+    const tName = turfName.trim() || `${sport.toUpperCase()} Turf 1`;
+    const rate = Number(pricePerHour) > 0 ? Number(pricePerHour) : 800;
 
     setLoading(true);
     try {
       // 1. Update facility settings with facility name and owner name
       await updateFacilitySettings({
-        facilityName: facilityName.trim(),
-        ownerName: ownerName.trim(),
-        phone: phone.trim(),
-        address: cityAddress.trim(),
+        facilityName: fName,
+        ownerName: oName,
+        phone: phone.trim() || '+91 98765 43210',
+        address: cityAddress.trim() || 'Sports Complex Arena',
         currencySymbol: existingSettings.currencySymbol || '₹',
         openingTime: existingSettings.openingTime || '06:00',
         closingTime: existingSettings.closingTime || '23:00',
@@ -96,33 +105,41 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
 
       // 2. Add the first turf
       const newTurfId = await addTurf({
-        name: turfName.trim(),
+        name: tName,
         sport,
-        pricePerHour: Number(pricePerHour) || 800,
-        surface: surface.trim(),
-        size: sport === 'football' ? '5-a-side (90x50 ft)' : 'Standard Court',
-        description: `Primary ${sport} arena at ${facilityName.trim()} managed by ${ownerName.trim() || 'Facility Owner'}`,
+        pricePerHour: rate,
+        surface: surface.trim() || 'Standard Sports Turf',
+        size: sport === 'football' ? '5-a-side (90x50 ft)' : 'Standard Pitch',
+        description: `Primary ${sport} arena at ${fName} managed by ${oName}`,
         isActive: true,
       });
 
-      // 3. Generate slots for today so the schedule is instantly ready
-      const todayStr = new Date().toISOString().split('T')[0];
-      await generateSlotsForDate({
-        date: todayStr,
-        turfId: newTurfId,
-        turfName: turfName.trim(),
-        openingHour: 6,
-        closingHour: 23,
-        slotDurationMinutes: 60,
-        pricePerHour: Number(pricePerHour) || 800,
-      });
+      // 3. Generate slots for today so the schedule is immediately populated
+      if (newTurfId) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        try {
+          await generateSlotsForDate({
+            date: todayStr,
+            turfId: newTurfId,
+            turfName: tName,
+            openingHour: 6,
+            closingHour: 23,
+            slotDurationMinutes: 60,
+            pricePerHour: rate,
+          });
+        } catch (slotErr) {
+          console.warn('Slot auto-generate warning:', slotErr);
+        }
+      }
 
-      // Store completion in localStorage
+      // Store completion in localStorage and close modal
       localStorage.setItem('turf_initial_setup_completed', 'true');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to setup initial turf:', error);
-      alert('Error saving turf setup. Please try again.');
+      setErrorMessage(
+        error?.message || 'Unable to save turf settings. Please check your network and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -169,7 +186,21 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
         </div>
 
         {/* Setup Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleProcessSubmit} className="p-5 sm:p-6 space-y-4">
+          {/* Error Banner */}
+          {errorMessage && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-2 animate-in fade-in">
+              <span>{errorMessage}</span>
+              <button
+                type="button"
+                onClick={() => setErrorMessage(null)}
+                className="text-rose-500 hover:text-rose-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           {/* Row 1: Facility / Arena Name & Owner Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5">
@@ -335,13 +366,17 @@ export const InitialTurfSetupModal: React.FC<InitialTurfSetupModalProps> = ({
                 Skip for now
               </button>
               <button
-                type="submit"
+                type="button"
                 disabled={loading}
+                onClick={(e) => handleProcessSubmit(e)}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-emerald-700/20 cursor-pointer disabled:opacity-50"
                 id="initial-setup-submit-btn"
               >
                 {loading ? (
-                  <span>Saving & Creating Turf...</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Saving Turf...</span>
+                  </span>
                 ) : (
                   <>
                     <span>Save & Launch Turf</span>
