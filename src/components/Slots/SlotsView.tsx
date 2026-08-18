@@ -110,32 +110,53 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
 
   const handleGenerateSlots = async (e: React.FormEvent) => {
     e.preventDefault();
-    const targetTurf = turfs.find((t) => t.id === genTurfId);
-    if (!targetTurf) return;
+    if (turfs.length === 0) {
+      alert('Please add at least one turf before generating slots.');
+      return;
+    }
+
+    const targetTurfId = genTurfId || turfs[0].id;
+    const targetTurfs =
+      targetTurfId === 'all'
+        ? turfs
+        : turfs.filter((t) => t.id === targetTurfId);
+
+    if (targetTurfs.length === 0) {
+      alert('Selected turf could not be found.');
+      return;
+    }
 
     setIsGenerating(true);
     setGenMessage(null);
     try {
-      const createdCount = await generateSlotsForDate({
-        date: genDate,
-        turfId: targetTurf.id,
-        turfName: targetTurf.name,
-        openingHour: Number(genOpeningHour),
-        closingHour: Number(genClosingHour),
-        slotDurationMinutes: Number(genDuration),
-        pricePerHour: Number(genPrice || targetTurf.pricePerHour),
-      });
+      let totalCreated = 0;
+      for (const t of targetTurfs) {
+        const createdCount = await generateSlotsForDate({
+          date: genDate,
+          turfId: t.id,
+          turfName: t.name,
+          openingHour: Number(genOpeningHour),
+          closingHour: Number(genClosingHour),
+          slotDurationMinutes: Number(genDuration),
+          pricePerHour: Number(genPrice || t.pricePerHour),
+        });
+        totalCreated += createdCount;
+      }
 
       setSelectedDate(genDate);
-      setSelectedTurfId(targetTurf.id);
-      setGenMessage(`Successfully generated ${createdCount} slots for ${genDate}!`);
+      if (targetTurfs.length === 1) {
+        setSelectedTurfId(targetTurfs[0].id);
+      }
+      setGenMessage(
+        `Successfully created ${totalCreated} slots for ${targetTurfs.map((t) => t.name).join(', ')}!`
+      );
       setTimeout(() => {
         setIsGenModalOpen(false);
         setGenMessage(null);
       }, 1200);
     } catch (error) {
-      console.error(error);
-      alert('Failed to generate slots.');
+      console.error('Slot generation failed:', error);
+      alert('Failed to generate slots. Please check console.');
     } finally {
       setIsGenerating(false);
     }
@@ -197,12 +218,15 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
     }
   };
 
-  // Next 7 days quick chips
+  // Next 7 days quick chips formatted as dd/mm (e.g. 18/08)
   const next7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
     const dStr = d.toISOString().split('T')[0];
-    const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const weekday = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `${weekday} ${day}/${month}`;
     return { dateStr: dStr, label: dayLabel };
   });
 
@@ -389,7 +413,8 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+          {/* Slots List View */}
+          <div className="space-y-2.5">
             {sortedSlots.map((slot) => {
               const isAvailable = slot.status === 'available';
               const isBooked = slot.status === 'booked';
@@ -399,48 +424,65 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
               return (
                 <div
                   key={slot.id}
-                  className={`p-4 rounded-2xl border transition-all relative flex flex-col justify-between shadow-xs ${
+                  className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs ${
                     isBooked
-                      ? 'bg-blue-50/50 border-blue-200'
+                      ? 'bg-blue-50/40 border-blue-200'
                       : isBlocked
-                      ? 'bg-rose-50/50 border-rose-200'
-                      : 'bg-white border-slate-200 hover:border-emerald-500'
+                      ? 'bg-rose-50/40 border-rose-200'
+                      : 'bg-white border-slate-200/90 hover:border-emerald-500/70 hover:shadow-xs'
                   }`}
                 >
-                  <div>
-                    {/* Top Row: Time & Status */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-sm font-bold text-slate-900 tracking-wide font-mono block">
+                  {/* Left Column: Time, Turf, Duration */}
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="p-2.5 rounded-xl bg-slate-100/80 text-slate-700 shrink-0 flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-emerald-600" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight font-mono">
                           {slot.startTime} – {slot.endTime}
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium">
-                          {formatDurationHuman(durationMins)}
-                          {slot.isCustom && ' • Custom'}
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isAvailable
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : isBooked
+                              ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                              : 'bg-rose-100 text-rose-800 border border-rose-200'
+                          }`}
+                        >
+                          {slot.status}
                         </span>
                       </div>
 
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                          isAvailable
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                            : isBooked
-                            ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                            : 'bg-rose-100 text-rose-800 border border-rose-200'
-                        }`}
-                      >
-                        {slot.status}
-                      </span>
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 truncate">
+                        <span className="font-semibold text-slate-700 truncate">🏟️ {slot.turfName}</span>
+                        <span>•</span>
+                        <span>{formatDurationHuman(durationMins)}</span>
+                        {slot.isCustom && (
+                          <>
+                            <span>•</span>
+                            <span className="text-purple-600 font-medium">Custom</span>
+                          </>
+                        )}
+                        {isBlocked && slot.blockReason && (
+                          <>
+                            <span>•</span>
+                            <span className="text-rose-600 font-medium truncate max-w-[200px]">
+                              {slot.blockReason}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
+                  </div>
 
-                    {/* Turf Name */}
-                    <div className="text-xs text-slate-500 truncate mb-3 font-medium">
-                      🏟️ {slot.turfName}
-                    </div>
-
+                  {/* Right Column: Price & Actions */}
+                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                     {/* Price with Inline Edit */}
-                    <div className="flex items-center justify-between py-2 border-y border-slate-100 mb-3 text-xs">
-                      <span className="text-slate-500">Slot Price:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 hidden md:inline font-medium">Price:</span>
                       {editingPriceSlotId === slot.id ? (
                         <div className="flex items-center gap-1.5">
                           <input
@@ -448,23 +490,23 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                             min={1}
                             value={newPriceValue}
                             onChange={(e) => setNewPriceValue(Number(e.target.value))}
-                            className="w-18 px-2 py-0.5 bg-slate-50 border border-emerald-500 rounded text-xs font-mono text-slate-900"
+                            className="w-20 px-2 py-1 bg-white border border-emerald-500 rounded-lg text-xs font-mono text-slate-900 focus:outline-none"
                           />
                           <button
                             onClick={() => handleSavePrice(slot.id)}
-                            className="px-2 py-0.5 bg-emerald-600 text-white font-bold rounded text-[11px] cursor-pointer"
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs cursor-pointer shadow-2xs"
                           >
                             Save
                           </button>
                           <button
                             onClick={() => setEditingPriceSlotId(null)}
-                            className="text-slate-400 hover:text-slate-700 text-[11px] cursor-pointer"
+                            className="p-1 text-slate-400 hover:text-slate-700 text-xs cursor-pointer"
                           >
                             ✕
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70">
                           <span className="font-mono font-bold text-slate-900 text-sm">
                             {currency}{slot.price}
                           </span>
@@ -474,7 +516,8 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                                 setEditingPriceSlotId(slot.id);
                                 setNewPriceValue(slot.price);
                               }}
-                              className="text-[10px] text-slate-500 hover:text-emerald-600 cursor-pointer underline"
+                              className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium cursor-pointer ml-1"
+                              title="Edit slot price"
                             >
                               Edit
                             </button>
@@ -483,47 +526,42 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                       )}
                     </div>
 
-                    {isBlocked && (
-                      <p className="text-[11px] text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-100 mb-3">
-                        ⚠️ Reason: {slot.blockReason || 'Maintenance'}
-                      </p>
-                    )}
-                  </div>
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
+                      {isAvailable && (
+                        <>
+                          <button
+                            onClick={() => onOpenBlockSlot(slot)}
+                            className="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer min-h-[38px]"
+                          >
+                            Block
+                          </button>
+                          <button
+                            onClick={() => onOpenNewBooking(slot.turfId, slot)}
+                            className="py-1.5 px-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl transition-all shadow-2xs cursor-pointer min-h-[38px] flex items-center justify-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Book</span>
+                          </button>
+                        </>
+                      )}
 
-                  {/* Actions */}
-                  <div className="flex items-center justify-between gap-2 pt-1">
-                    {isAvailable && (
-                      <>
+                      {isBlocked && (
                         <button
-                          onClick={() => onOpenBlockSlot(slot)}
-                          className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition-colors cursor-pointer min-h-[38px]"
+                          onClick={() => handleUnblock(slot.id)}
+                          className="py-1.5 px-3.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer border border-slate-200 flex items-center gap-1.5 min-h-[38px]"
                         >
-                          Block
+                          <Unlock className="w-3.5 h-3.5" />
+                          <span>Unblock</span>
                         </button>
-                        <button
-                          onClick={() => onOpenNewBooking(slot.turfId, slot)}
-                          className="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors text-center cursor-pointer shadow-xs min-h-[38px] flex items-center justify-center"
-                        >
-                          + Book Slot
-                        </button>
-                      </>
-                    )}
+                      )}
 
-                    {isBlocked && (
-                      <button
-                        onClick={() => handleUnblock(slot.id)}
-                        className="w-full py-1.5 px-3 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer border border-slate-200 flex items-center justify-center gap-1.5 min-h-[38px]"
-                      >
-                        <Unlock className="w-3.5 h-3.5" />
-                        Unblock Slot
-                      </button>
-                    )}
-
-                    {isBooked && (
-                      <div className="w-full text-center py-1.5 text-xs text-blue-700 font-semibold bg-blue-100 rounded-lg">
-                        Reserved for Booking
-                      </div>
-                    )}
+                      {isBooked && (
+                        <span className="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-200">
+                          Reserved
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -563,8 +601,11 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                     const t = turfs.find((item) => item.id === e.target.value);
                     if (t) setGenPrice(t.pricePerHour);
                   }}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white cursor-pointer"
                 >
+                  {turfs.length > 1 && (
+                    <option value="all">⚡ All Turfs ({turfs.length} Courts)</option>
+                  )}
                   {turfs.map((turf) => (
                     <option key={turf.id} value={turf.id}>
                       {turf.name} ({currency}{turf.pricePerHour}/hr)

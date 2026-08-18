@@ -127,16 +127,20 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Customer Details
               </span>
-              <a
-                href={`tel:${booking.customerPhone}`}
-                className="text-xs text-emerald-700 font-bold hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200"
-              >
-                <Phone className="w-3.5 h-3.5 text-emerald-600" /> Call Player
-              </a>
+              {booking.customerPhone && (
+                <a
+                  href={`tel:${booking.customerPhone}`}
+                  className="text-xs text-emerald-700 font-bold hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200"
+                >
+                  <Phone className="w-3.5 h-3.5 text-emerald-600" /> Call Player
+                </a>
+              )}
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-base font-bold text-slate-900">{booking.customerName}</span>
-              <span className="text-sm font-mono font-medium text-slate-700">{booking.customerPhone}</span>
+              <span className="text-base font-bold text-slate-900">{booking.customerName || 'Walk-in Customer'}</span>
+              <span className="text-sm font-mono font-medium text-slate-700">
+                {booking.customerPhone || <span className="text-xs text-slate-400 font-sans italic">Not provided</span>}
+              </span>
             </div>
           </div>
 

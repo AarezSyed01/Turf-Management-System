@@ -14,12 +14,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTurfSetup,
   activeTurfCount,
 }) => {
-  const fullDateFormatted = new Date().toLocaleDateString('en-US', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+  const fullDateFormatted = `${day}/${month}/${year}`;
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 py-3 transition-colors shadow-xs">

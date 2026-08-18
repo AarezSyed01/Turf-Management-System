@@ -257,12 +257,16 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
                     {/* Customer */}
                     <td className="px-5 py-4">
                       <div className="font-bold text-slate-900 flex items-center gap-2">
-                        <span>{b.customerName}</span>
+                        <span>{b.customerName || 'Walk-in Customer'}</span>
                       </div>
-                      <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
-                        <Phone className="w-3 h-3 text-slate-400" />
-                        <span>{b.customerPhone}</span>
-                      </div>
+                      {b.customerPhone ? (
+                        <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{b.customerPhone}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 italic">No phone provided</span>
+                      )}
                     </td>
 
                     {/* Turf & Date */}
@@ -378,12 +382,18 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="font-bold text-slate-900 text-base">
-                      {b.customerName}
+                      {b.customerName || 'Walk-in Customer'}
                     </h3>
-                    <p className="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3 text-slate-400" />
-                      {b.customerPhone}
-                    </p>
+                    {b.customerPhone ? (
+                      <p className="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3 text-slate-400" />
+                        {b.customerPhone}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 italic mt-0.5">
+                        No phone provided
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">

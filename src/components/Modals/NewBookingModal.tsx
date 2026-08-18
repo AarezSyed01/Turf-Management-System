@@ -244,15 +244,6 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
     e.preventDefault();
     setErrorMessage(null);
 
-    if (!customerName.trim()) {
-      setErrorMessage('Customer name is required.');
-      return;
-    }
-    if (!customerPhone.trim() || customerPhone.replace(/[^0-9]/g, '').length < 7) {
-      setErrorMessage('Please provide a valid contact phone number.');
-      return;
-    }
-
     const turf = turfs.find((t) => t.id === selectedTurfId) || selectedTurf;
     if (!turf) {
       setErrorMessage('Selected turf court not found.');
@@ -297,6 +288,9 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
     setLoading(true);
     try {
+      const finalCustomerName = customerName.trim() || 'Walk-in Customer';
+      const finalCustomerPhone = customerPhone.trim();
+
       await createBooking({
         turfId: turf.id,
         turfName: turf.name,
@@ -304,8 +298,8 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
         date: selectedDate,
         startTime: finalStartTime,
         endTime: finalEndTime,
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
+        customerName: finalCustomerName,
+        customerPhone: finalCustomerPhone,
         totalAmount: Number(totalAmount),
         paidAmount: Number(paidAmount),
         paymentMethod,
@@ -375,14 +369,13 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Customer Name *
+                Customer Name <span className="text-slate-400 font-normal text-[10px] normal-case">(Optional)</span>
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  required
-                  placeholder="e.g. Rahul Sharma"
+                  placeholder="e.g. Rahul Sharma or Walk-in"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-base sm:text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
@@ -392,15 +385,14 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Customer Phone *
+                Customer Phone <span className="text-slate-400 font-normal text-[10px] normal-case">(Optional)</span>
               </label>
               <div className="relative">
                 <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="tel"
                   inputMode="tel"
-                  required
-                  placeholder="+91 98765 43210"
+                  placeholder="e.g. 9876543210"
                   value={customerPhone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-base sm:text-sm font-mono focus:outline-none focus:border-emerald-500 focus:bg-white"
@@ -449,81 +441,66 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
           </div>
 
           {/* Time Mode Switcher & Time Selection */}
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                Schedule & Time
+                <Clock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Time Slot</span>
               </span>
-              <div className="flex bg-slate-200/70 p-0.5 rounded-xl text-xs font-medium">
+              <div className="flex bg-slate-200/70 p-0.5 rounded-xl text-xs font-medium shrink-0">
                 <button
                   type="button"
                   onClick={() => setTimeMode('predefined')}
-                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer text-xs ${
                     timeMode === 'predefined'
                       ? 'bg-white text-slate-900 font-bold shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Standard Slots
+                  Slots ({sortedAvailableSlots.length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimeMode('custom')}
-                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer text-xs flex items-center gap-1 ${
                     timeMode === 'custom'
                       ? 'bg-white text-emerald-700 font-bold shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Timer className="w-3.5 h-3.5" />
-                  Custom Time
+                  <Timer className="w-3 h-3" />
+                  Custom
                 </button>
               </div>
             </div>
 
             {/* PREDEFINED SLOTS MODE */}
             {timeMode === 'predefined' ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 font-medium">
-                    Available Slots ({sortedAvailableSlots.length})
-                  </span>
-                  {sortedAvailableSlots.length === 0 && (
-                    <button
-                      type="button"
-                      onClick={handleQuickGenerateForDate}
-                      className="text-emerald-600 hover:underline cursor-pointer font-semibold"
-                    >
-                      ⚡ Auto-generate slots
-                    </button>
-                  )}
-                </div>
-
+              <div>
                 {sortedAvailableSlots.length === 0 ? (
-                  <div className="p-4 bg-white border border-dashed border-slate-300 rounded-xl text-center space-y-2">
+                  <div className="p-3 bg-white border border-dashed border-slate-300 rounded-xl text-center space-y-2">
                     <p className="text-xs text-slate-500">
-                      No slots available on this date.
+                      No standard slots for this day.
                     </p>
                     <div className="flex items-center justify-center gap-2">
                       <button
                         type="button"
                         onClick={() => setTimeMode('custom')}
-                        className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-xs rounded-lg border border-emerald-200 cursor-pointer"
+                        className="px-3 py-1 bg-emerald-50 text-emerald-700 font-semibold text-xs rounded-lg border border-emerald-200 cursor-pointer"
                       >
-                        ⏱️ Use Custom Time
+                        ⏱️ Custom Time
                       </button>
                       <button
                         type="button"
                         onClick={handleQuickGenerateForDate}
-                        className="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold text-xs rounded-lg cursor-pointer"
+                        className="px-3 py-1 bg-slate-100 text-slate-700 font-semibold text-xs rounded-lg cursor-pointer"
                       >
                         ⚡ Generate Slots
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200">
                     {sortedAvailableSlots.map((slot) => {
                       const isSelected = selectedSlotId === slot.id;
                       return (
@@ -531,22 +508,22 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`p-2 rounded-xl text-left border transition-all cursor-pointer min-h-[44px] ${
+                          className={`px-2.5 py-1.5 rounded-lg text-left border transition-all cursor-pointer min-h-[38px] flex items-center justify-between ${
                             isSelected
                               ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                              : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-400'
+                              : 'bg-slate-50/70 text-slate-800 border-slate-200/80 hover:border-emerald-400'
                           }`}
                         >
-                          <div className="text-xs font-bold font-mono">
+                          <span className="text-xs font-bold font-mono truncate">
                             {slot.startTime} – {slot.endTime}
-                          </div>
-                          <div
-                            className={`text-[11px] font-semibold mt-0.5 ${
+                          </span>
+                          <span
+                            className={`text-[11px] font-bold font-mono ml-1 shrink-0 ${
                               isSelected ? 'text-emerald-100' : 'text-emerald-700'
                             }`}
                           >
                             {currency}{slot.price}
-                          </div>
+                          </span>
                         </button>
                       );
                     })}
@@ -555,18 +532,13 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
               </div>
             ) : (
               /* CUSTOM TIME RANGE MODE */
-              <div className="space-y-3 bg-white p-3.5 rounded-xl border border-slate-200">
+              <div className="space-y-2.5 bg-white p-3 rounded-xl border border-slate-200">
                 {/* Time Inputs */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
-                        Start Time
-                      </label>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {customStartTime12}
-                      </span>
-                    </div>
+                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">
+                      Start Time ({customStartTime12})
+                    </label>
                     <input
                       type="time"
                       required
@@ -575,19 +547,14 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                         setCustomStartTime24(e.target.value);
                         setIsAmountManuallyEdited(false);
                       }}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
+                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-mono text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
                     />
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
-                        End Time
-                      </label>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {customEndTime12}
-                      </span>
-                    </div>
+                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">
+                      End Time ({customEndTime12})
+                    </label>
                     <input
                       type="time"
                       required
@@ -596,15 +563,14 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                         setCustomEndTime24(e.target.value);
                         setIsAmountManuallyEdited(false);
                       }}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white"
+                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-mono text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
                     />
                   </div>
                 </div>
 
                 {/* Duration Presets & Badge */}
-                <div className="flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] text-slate-400 mr-1">Duration:</span>
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 gap-1.5">
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
                     {[
                       { label: '1h', mins: 60 },
                       { label: '1.5h', mins: 90 },
@@ -615,10 +581,10 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                         key={preset.mins}
                         type="button"
                         onClick={() => setQuickDuration(preset.mins)}
-                        className={`px-2 py-0.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                        className={`px-2 py-0.5 text-[11px] font-semibold rounded-md border transition-all cursor-pointer shrink-0 ${
                           customDurationMinutes === preset.mins
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
-                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
                         {preset.label}
@@ -626,27 +592,26 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                     ))}
                   </div>
 
-                  <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                  <span className="text-[11px] font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
                     {formatDurationHuman(customDurationMinutes)}
                   </span>
                 </div>
 
                 {/* Conflict Status / Availability Banner */}
                 {customTimeConflict ? (
-                  <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>
-                      <strong>Slot Conflict:</strong> Overlaps with {customTimeConflict.status === 'blocked' ? 'blocked' : 'booked'} slot (
-                      {customTimeConflict.startTime} – {customTimeConflict.endTime}).
+                  <div className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-[11px] flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span className="truncate">
+                      <strong>Conflict:</strong> {customTimeConflict.startTime} – {customTimeConflict.endTime} ({customTimeConflict.status})
                     </span>
                   </div>
                 ) : (
-                  <div className="p-2 bg-emerald-50/70 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{customStartTime12} – {customEndTime12} is available</span>
+                  <div className="p-1.5 px-2.5 bg-emerald-50/70 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate">{customStartTime12} – {customEndTime12} available</span>
                     </div>
-                    <span className="font-mono font-bold text-emerald-700">
+                    <span className="font-mono font-bold text-emerald-700 shrink-0 ml-1">
                       {currency}{selectedTurf ? Math.round(selectedTurf.pricePerHour * (customDurationMinutes / 60)) : 0}
                     </span>
                   </div>
