@@ -26,22 +26,23 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
   if (!booking) return null;
   const currency = settings.currencySymbol || '₹';
 
-  const [amount, setAmount] = useState<number>(booking.pendingAmount);
+  const [amount, setAmount] = useState<number | ''>(booking.pendingAmount);
   const [method, setMethod] = useState<PaymentMethod>('UPI');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const remainingAfterPayment = Math.max(0, booking.pendingAmount - amount);
+  const numAmount = amount === '' ? 0 : Number(amount);
+  const remainingAfterPayment = Math.max(0, booking.pendingAmount - numAmount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (amount <= 0) return;
+    if (numAmount <= 0) return;
 
     setLoading(true);
     try {
       await recordBookingPayment(
         booking.id,
-        Number(amount),
+        numAmount,
         method,
         notes.trim() || 'Balance settlement'
       );
@@ -129,8 +130,16 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
                 min={1}
                 max={booking.pendingAmount}
                 required
+                placeholder="0"
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => {
+                  const valStr = e.target.value;
+                  if (valStr === '') {
+                    setAmount('');
+                    return;
+                  }
+                  setAmount(Number(valStr));
+                }}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-emerald-700 font-mono font-bold text-lg focus:outline-none focus:border-emerald-500 focus:bg-white"
               />
               {remainingAfterPayment > 0 ? (

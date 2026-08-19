@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, Calendar, ShieldCheck, Edit3, Trophy } from 'lucide-react';
 import { FacilitySettings } from '../../types.ts';
 
@@ -14,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTurfSetup,
   activeTurfCount,
 }) => {
+  const [logoError, setLogoError] = useState(false);
   const today = new Date();
   const day = String(today.getDate()).padStart(2, '0');
   const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -25,8 +26,20 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto w-full">
         {/* Facility Branding - Shifted to the far left */}
         <div className="flex items-center gap-2.5 min-w-0 justify-start mr-auto">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-xs shrink-0">
-            <Trophy className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-center shrink-0">
+            {!logoError ? (
+              <img
+                src="/logo.png"
+                alt={settings.facilityName || 'Brand Logo'}
+                onError={() => setLogoError(true)}
+                referrerPolicy="no-referrer"
+                className="h-9 w-auto max-w-[120px] sm:h-10 sm:max-w-[150px] object-contain rounded-lg"
+              />
+            ) : (
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-xs shrink-0">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+            )}
           </div>
           <div className="min-w-0 text-left">
             <div className="flex items-center gap-2">

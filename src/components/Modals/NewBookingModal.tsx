@@ -86,10 +86,10 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
   const [customStartTime24, setCustomStartTime24] = useState<string>('18:00');
   const [customEndTime24, setCustomEndTime24] = useState<string>('19:30');
 
-  const [totalAmount, setTotalAmount] = useState<number>(
+  const [totalAmount, setTotalAmount] = useState<number | ''>(
     preselectedSlot?.price || 800
   );
-  const [paidAmount, setPaidAmount] = useState<number>(
+  const [paidAmount, setPaidAmount] = useState<number | ''>(
     preselectedSlot?.price || 800
   );
   const [isAmountManuallyEdited, setIsAmountManuallyEdited] = useState(false);
@@ -232,11 +232,13 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
   };
 
   // Derived pending amount & payment status
-  const pendingAmount = Math.max(0, totalAmount - paidAmount);
+  const numTotalAmount = totalAmount === '' ? 0 : Number(totalAmount);
+  const numPaidAmount = paidAmount === '' ? 0 : Number(paidAmount);
+  const pendingAmount = Math.max(0, numTotalAmount - numPaidAmount);
   const paymentStatus: PaymentStatus =
-    paidAmount >= totalAmount
+    numPaidAmount >= numTotalAmount && numTotalAmount > 0
       ? 'paid'
-      : paidAmount > 0
+      : numPaidAmount > 0
       ? 'partial'
       : 'pending';
 
@@ -640,12 +642,19 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                   type="number"
                   min={1}
                   required
+                  placeholder="0"
                   value={totalAmount}
                   onChange={(e) => {
-                    const val = Number(e.target.value);
+                    const valStr = e.target.value;
+                    if (valStr === '') {
+                      setTotalAmount('');
+                      setIsAmountManuallyEdited(true);
+                      return;
+                    }
+                    const val = Number(valStr);
                     setTotalAmount(val);
                     setIsAmountManuallyEdited(true);
-                    if (paidAmount > val) setPaidAmount(val);
+                    if (paidAmount !== '' && paidAmount > val) setPaidAmount(val);
                   }}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-mono font-bold text-base sm:text-sm focus:outline-none focus:border-emerald-500"
                 />
@@ -658,10 +667,18 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                 <input
                   type="number"
                   min={0}
-                  max={totalAmount}
+                  max={totalAmount === '' ? undefined : totalAmount}
                   required
+                  placeholder="0"
                   value={paidAmount}
-                  onChange={(e) => setPaidAmount(Number(e.target.value))}
+                  onChange={(e) => {
+                    const valStr = e.target.value;
+                    if (valStr === '') {
+                      setPaidAmount('');
+                      return;
+                    }
+                    setPaidAmount(Number(valStr));
+                  }}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-emerald-700 font-mono font-bold text-base sm:text-sm focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -690,17 +707,17 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
               <span className="text-[11px] text-slate-500 font-medium">Quick Set:</span>
               <button
                 type="button"
-                onClick={() => setPaidAmount(totalAmount)}
+                onClick={() => setPaidAmount(numTotalAmount)}
                 className="px-2 py-1 text-[11px] font-bold bg-white border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700 cursor-pointer"
               >
-                Full ({currency}{totalAmount})
+                Full ({currency}{numTotalAmount})
               </button>
               <button
                 type="button"
-                onClick={() => setPaidAmount(Math.round(totalAmount / 2))}
+                onClick={() => setPaidAmount(Math.round(numTotalAmount / 2))}
                 className="px-2 py-1 text-[11px] font-bold bg-white border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700 cursor-pointer"
               >
-                50% ({currency}{Math.round(totalAmount / 2)})
+                50% ({currency}{Math.round(numTotalAmount / 2)})
               </button>
               <button
                 type="button"

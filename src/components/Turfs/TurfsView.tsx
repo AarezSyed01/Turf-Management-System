@@ -28,7 +28,12 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Form State
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    sport: SportType;
+    pricePerHour: number | '';
+    isActive: boolean;
+  }>({
     name: '',
     sport: 'football' as SportType,
     pricePerHour: 800,
@@ -296,10 +301,15 @@ export const TurfsView: React.FC<TurfsViewProps> = ({ turfs, settings }) => {
                     type="number"
                     required
                     min={1}
+                    placeholder="0"
                     value={formData.pricePerHour}
-                    onChange={(e) =>
-                      setFormData({ ...formData, pricePerHour: Number(e.target.value) })
-                    }
+                    onChange={(e) => {
+                      const valStr = e.target.value;
+                      setFormData({
+                        ...formData,
+                        pricePerHour: valStr === '' ? '' : Number(valStr),
+                      });
+                    }}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:border-emerald-500 focus:bg-white"
                   />
                 </div>

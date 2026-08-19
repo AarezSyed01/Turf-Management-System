@@ -66,7 +66,7 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
   const [genOpeningHour, setGenOpeningHour] = useState<number>(6);
   const [genClosingHour, setGenClosingHour] = useState<number>(23);
   const [genDuration, setGenDuration] = useState<number>(60);
-  const [genPrice, setGenPrice] = useState<number>(800);
+  const [genPrice, setGenPrice] = useState<number | ''>(800);
   const [isGenerating, setIsGenerating] = useState(false);
   const [genMessage, setGenMessage] = useState<string | null>(null);
 
@@ -78,13 +78,13 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
   const [customSlotDate, setCustomSlotDate] = useState<string>(todayStr);
   const [customSlotStart24, setCustomSlotStart24] = useState<string>('19:30');
   const [customSlotEnd24, setCustomSlotEnd24] = useState<string>('21:00');
-  const [customSlotPrice, setCustomSlotPrice] = useState<number>(1200);
+  const [customSlotPrice, setCustomSlotPrice] = useState<number | ''>(1200);
   const [isAddingCustomSlot, setIsAddingCustomSlot] = useState(false);
   const [customSlotError, setCustomSlotError] = useState<string | null>(null);
 
   // Quick price editing state
   const [editingPriceSlotId, setEditingPriceSlotId] = useState<string | null>(null);
-  const [newPriceValue, setNewPriceValue] = useState<number>(800);
+  const [newPriceValue, setNewPriceValue] = useState<number | ''>(800);
 
   // Filter slots for selected date & turf
   const dateSlots = slots.filter((s) => s.date === selectedDate);
@@ -488,8 +488,12 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                           <input
                             type="number"
                             min={1}
+                            placeholder="0"
                             value={newPriceValue}
-                            onChange={(e) => setNewPriceValue(Number(e.target.value))}
+                            onChange={(e) => {
+                              const valStr = e.target.value;
+                              setNewPriceValue(valStr === '' ? '' : Number(valStr));
+                            }}
                             className="w-20 px-2 py-1 bg-white border border-emerald-500 rounded-lg text-xs font-mono text-slate-900 focus:outline-none"
                           />
                           <button
@@ -694,8 +698,12 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                   <input
                     type="number"
                     min={1}
+                    placeholder="0"
                     value={genPrice}
-                    onChange={(e) => setGenPrice(Number(e.target.value))}
+                    onChange={(e) => {
+                      const valStr = e.target.value;
+                      setGenPrice(valStr === '' ? '' : Number(valStr));
+                    }}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:border-emerald-500 focus:bg-white"
                   />
                 </div>
@@ -858,8 +866,12 @@ export const SlotsView: React.FC<SlotsViewProps> = ({
                   type="number"
                   min={1}
                   required
+                  placeholder="0"
                   value={customSlotPrice}
-                  onChange={(e) => setCustomSlotPrice(Number(e.target.value))}
+                  onChange={(e) => {
+                    const valStr = e.target.value;
+                    setCustomSlotPrice(valStr === '' ? '' : Number(valStr));
+                  }}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono font-bold focus:outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
