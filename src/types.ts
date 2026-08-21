@@ -53,6 +53,8 @@ export interface Booking {
   bookingStatus: BookingStatus;
   isCustomTime?: boolean;
   notes?: string;
+  smsNotificationSent?: boolean;
+  smsSentAt?: string;
   createdAt: string;
   updatedAt?: string;
 }

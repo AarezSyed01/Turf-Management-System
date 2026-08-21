@@ -21,6 +21,7 @@ import {
   FacilitySettings,
   PaymentMethod,
 } from '../types.ts';
+import { sendBookingConfirmationSMS, getSMSConfig } from './sms.ts';
 
 // ----------------------------------------------------
 // LOCAL REACTIVE STORAGE & FAST PERSISTENCE CACHE
@@ -556,6 +557,27 @@ export async function createBooking(data: {
     localPayments = [payment, ...localPayments];
     saveLocal(STORAGE_KEYS.PAYMENTS, localPayments);
     emitChange('payments');
+  }
+
+  // Automatically dispatch booking confirmation SMS if customer phone is provided
+  if (data.customerPhone.trim()) {
+    const smsConfig = getSMSConfig();
+    if (smsConfig.autoSendOnBooking !== false) {
+      sendBookingConfirmationSMS(newBooking, localSettings, smsConfig)
+        .then((res) => {
+          if (res.success) {
+            newBooking.smsNotificationSent = true;
+            newBooking.smsSentAt = res.timestamp;
+            // Update cache
+            localBookings = localBookings.map((b) => (b.id === bookingId ? { ...newBooking } : b));
+            saveLocal(STORAGE_KEYS.BOOKINGS, localBookings);
+            emitChange('bookings');
+          }
+        })
+        .catch((err) => {
+          console.warn('Auto SMS notification error:', err);
+        });
+    }
   }
 
   // Update Customer Directory

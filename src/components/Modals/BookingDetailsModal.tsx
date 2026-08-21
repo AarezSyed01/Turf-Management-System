@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Booking, FacilitySettings } from '../../types.ts';
 import { cancelBooking, markBookingCompleted, deleteBooking } from '../../lib/db.ts';
 import {
+  sendBookingConfirmationSMS,
+  formatBookingConfirmationSMS,
+  openDeviceSMSApp,
+  createDeviceSMSUri,
+} from '../../lib/sms.ts';
+import {
   X,
   Calendar,
   Clock,
@@ -16,6 +22,10 @@ import {
   Trash2,
   Ban,
   ShieldCheck,
+  MessageSquare,
+  Send,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 interface BookingDetailsModalProps {
@@ -37,6 +47,37 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [smsSending, setSmsSending] = useState(false);
+  const [smsFeedback, setSmsFeedback] = useState<string | null>(null);
+  const [hasCopiedSMS, setHasCopiedSMS] = useState(false);
+
+  const formattedConfirmationText = formatBookingConfirmationSMS(booking, settings);
+
+  const handleSendManualSMS = async () => {
+    if (!booking.customerPhone) {
+      alert('No customer phone number available for this booking.');
+      return;
+    }
+    // Also launch the phone's native SMS app with the prefilled formatted text
+    openDeviceSMSApp(booking.customerPhone, formattedConfirmationText);
+
+    setSmsSending(true);
+    setSmsFeedback(null);
+    try {
+      const res = await sendBookingConfirmationSMS(booking, settings);
+      if (res.success) {
+        setSmsFeedback('✓ SMS Confirmation recorded & opened!');
+      } else {
+        setSmsFeedback(`⚠️ ${res.error || 'Failed to send via gateway, opened in phone SMS'}`);
+      }
+      setTimeout(() => setSmsFeedback(null), 4000);
+    } catch (err: any) {
+      setSmsFeedback('Opened in phone SMS');
+      setTimeout(() => setSmsFeedback(null), 4000);
+    } finally {
+      setSmsSending(false);
+    }
+  };
 
   const handleCancel = async () => {
     setLoading(true);
@@ -194,17 +235,73 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             </div>
           </div>
 
-          {/* Share WhatsApp Receipt Link */}
-          <div className="pt-1">
-            <a
-              href={`https://wa.me/?text=${shareText}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors min-h-[44px]"
-            >
-              <Share2 className="w-4 h-4 text-emerald-700" />
-              Share WhatsApp Booking Receipt
-            </a>
+          {/* SMS & WhatsApp Action Area */}
+          <div className="pt-1 space-y-2.5">
+            {booking.customerPhone ? (
+              <div className="space-y-2">
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                      Confirmation Message (for {booking.customerPhone})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(formattedConfirmationText);
+                        setHasCopiedSMS(true);
+                        setTimeout(() => setHasCopiedSMS(false), 2500);
+                      }}
+                      className="text-[11px] text-emerald-300 hover:text-white font-semibold cursor-pointer flex items-center gap-1 bg-slate-800 px-2 py-0.5 rounded border border-slate-700"
+                    >
+                      <Copy className="w-3 h-3" />
+                      {hasCopiedSMS ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-mono text-emerald-200 whitespace-pre-wrap leading-relaxed">
+                    {formattedConfirmationText}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSendManualSMS}
+                    disabled={smsSending}
+                    className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors min-h-[44px] cursor-pointer shadow-xs disabled:opacity-50"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>📱 Open Phone SMS App</span>
+                  </button>
+
+                  <a
+                    href={`https://wa.me/${booking.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(formattedConfirmationText)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors min-h-[44px] text-center"
+                  >
+                    <Share2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                    <span>Send via WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(formattedConfirmationText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors min-h-[44px]"
+              >
+                <Share2 className="w-4 h-4 text-emerald-700" />
+                <span>Share WhatsApp Booking Receipt</span>
+              </a>
+            )}
+
+            {smsFeedback && (
+              <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-medium text-emerald-800 text-center animate-fadeIn">
+                {smsFeedback}
+              </div>
+            )}
           </div>
         </div>
 

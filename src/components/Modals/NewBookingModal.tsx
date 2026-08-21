@@ -34,7 +34,17 @@ import {
   Timer,
   ShieldCheck,
   ShieldAlert,
+  MessageSquare,
+  Send,
+  Copy,
+  Share2,
+  Check,
 } from 'lucide-react';
+import {
+  getSMSConfig,
+  formatBookingConfirmationSMS,
+  openDeviceSMSApp,
+} from '../../lib/sms.ts';
 
 interface NewBookingModalProps {
   isOpen: boolean;
@@ -97,6 +107,28 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Success Confirmation state with 1-tap SMS & WhatsApp
+  const [bookingSuccessInfo, setBookingSuccessInfo] = useState<{
+    bookingId: string;
+    customerName: string;
+    customerPhone: string;
+    turfName: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    totalAmount: number;
+    paidAmount: number;
+    pendingAmount: number;
+    smsText: string;
+  } | null>(null);
+  const [hasCopiedSMS, setHasCopiedSMS] = useState(false);
+
+  const handleCloseAll = () => {
+    setBookingSuccessInfo(null);
+    setErrorMessage(null);
+    onClose();
+  };
 
   const selectedTurf = useMemo(() => {
     return turfs.find((t) => t.id === selectedTurfId) || turfs[0];
@@ -292,8 +324,11 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
     try {
       const finalCustomerName = customerName.trim() || 'Walk-in Customer';
       const finalCustomerPhone = customerPhone.trim();
+      const numTotal = Number(totalAmount);
+      const numPaid = Number(paidAmount);
+      const numPending = Math.max(0, numTotal - numPaid);
 
-      await createBooking({
+      const newBookingId = await createBooking({
         turfId: turf.id,
         turfName: turf.name,
         slotId: finalSlotId,
@@ -302,14 +337,46 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
         endTime: finalEndTime,
         customerName: finalCustomerName,
         customerPhone: finalCustomerPhone,
-        totalAmount: Number(totalAmount),
-        paidAmount: Number(paidAmount),
+        totalAmount: numTotal,
+        paidAmount: numPaid,
         paymentMethod,
         isCustomTime: timeMode === 'custom',
         notes: notes.trim(),
       });
 
-      onClose();
+      if (finalCustomerPhone) {
+        const smsText = formatBookingConfirmationSMS(
+          {
+            id: newBookingId || 'NEW',
+            customerName: finalCustomerName,
+            customerPhone: finalCustomerPhone,
+            turfName: turf.name,
+            date: selectedDate,
+            startTime: finalStartTime,
+            endTime: finalEndTime,
+            totalAmount: numTotal,
+            paidAmount: numPaid,
+            pendingAmount: numPending,
+          },
+          settings
+        );
+
+        setBookingSuccessInfo({
+          bookingId: newBookingId || 'NEW',
+          customerName: finalCustomerName,
+          customerPhone: finalCustomerPhone,
+          turfName: turf.name,
+          date: selectedDate,
+          startTime: finalStartTime,
+          endTime: finalEndTime,
+          totalAmount: numTotal,
+          paidAmount: numPaid,
+          pendingAmount: numPending,
+          smsText,
+        });
+      } else {
+        handleCloseAll();
+      }
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Failed to create booking.');
@@ -344,14 +411,16 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-600" />
-              New Turf Booking
+              {bookingSuccessInfo ? 'Booking Confirmed!' : 'New Turf Booking'}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Direct reservation with standard slots or custom start & end times
+              {bookingSuccessInfo
+                ? 'Reservation created & ready to send confirmation message to player'
+                : 'Direct reservation with standard slots or custom start & end times'}
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCloseAll}
             className="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
             aria-label="Close modal"
           >
@@ -366,7 +435,83 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 py-3 pr-0.5 mt-1">
+        {bookingSuccessInfo ? (
+          <div className="flex-1 overflow-y-auto space-y-4 py-3 pr-0.5 mt-1 animate-fadeIn">
+            <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl text-center space-y-1.5">
+              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white mx-auto flex items-center justify-center shadow-md">
+                <Check className="w-6 h-6 stroke-[3]" />
+              </div>
+              <h4 className="text-base font-bold text-slate-900">
+                Booking Created Successfully!
+              </h4>
+              <p className="text-xs text-emerald-900 font-medium">
+                Send confirmation message to{' '}
+                <strong className="font-mono font-bold">{bookingSuccessInfo.customerPhone}</strong> ({bookingSuccessInfo.customerName})
+              </p>
+            </div>
+
+            {/* Exact formatted SMS preview card */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  Confirmation Message (SMS & WhatsApp)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(bookingSuccessInfo.smsText);
+                    setHasCopiedSMS(true);
+                    setTimeout(() => setHasCopiedSMS(false), 2500);
+                  }}
+                  className="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 hover:bg-emerald-100"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {hasCopiedSMS ? 'Copied!' : 'Copy Text'}
+                </button>
+              </div>
+
+              <div className="p-3.5 bg-slate-900 text-emerald-300 font-mono text-xs rounded-xl whitespace-pre-wrap leading-relaxed shadow-inner border border-slate-800 select-all">
+                {bookingSuccessInfo.smsText}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  openDeviceSMSApp(bookingSuccessInfo.customerPhone, bookingSuccessInfo.smsText);
+                }}
+                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md min-h-[48px]"
+              >
+                <Send className="w-4 h-4" />
+                <span>📱 Open Phone SMS App (Send to {bookingSuccessInfo.customerPhone})</span>
+              </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={`https://wa.me/${bookingSuccessInfo.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(bookingSuccessInfo.smsText)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-900 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors min-h-[44px] text-center"
+                >
+                  <Share2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <span>Send via WhatsApp</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={handleCloseAll}
+                  className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors min-h-[44px] cursor-pointer"
+                >
+                  Done / Close
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 py-3 pr-0.5 mt-1">
           {/* Customer Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -400,6 +545,12 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-base sm:text-sm font-mono focus:outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
+              {customerPhone.trim() && (
+                <p className="text-[11px] text-emerald-700 mt-1 flex items-center gap-1 font-medium">
+                  <MessageSquare className="w-3 h-3 text-emerald-600 shrink-0" />
+                  <span>SMS confirmation will be sent automatically to this number upon booking</span>
+                </p>
+              )}
             </div>
           </div>
 
@@ -792,6 +943,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ import {
   Layers,
   ChevronDown,
   Trash2,
+  MessageSquare,
 } from 'lucide-react';
 
 interface BookingsViewProps {
@@ -260,9 +261,15 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
                         <span>{b.customerName || 'Walk-in Customer'}</span>
                       </div>
                       {b.customerPhone ? (
-                        <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
+                        <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 font-mono">
                           <Phone className="w-3 h-3 text-slate-400" />
                           <span>{b.customerPhone}</span>
+                          <span
+                            title="SMS Confirmation sent to customer"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-sans font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/80"
+                          >
+                            <MessageSquare className="w-2.5 h-2.5" /> SMS
+                          </span>
                         </div>
                       ) : (
                         <span className="text-[11px] text-slate-400 italic">No phone provided</span>
@@ -385,10 +392,18 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
                       {b.customerName || 'Walk-in Customer'}
                     </h3>
                     {b.customerPhone ? (
-                      <p className="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                        <Phone className="w-3 h-3 text-slate-400" />
-                        {b.customerPhone}
-                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-xs text-slate-500 font-mono flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          {b.customerPhone}
+                        </p>
+                        <span
+                          title="SMS Confirmation sent"
+                          className="inline-flex items-center gap-0.5 text-[9px] font-sans font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200"
+                        >
+                          <MessageSquare className="w-2.5 h-2.5" /> SMS Sent
+                        </span>
+                      </div>
                     ) : (
                       <p className="text-[11px] text-slate-400 italic mt-0.5">
                         No phone provided
